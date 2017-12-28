@@ -1,7 +1,7 @@
 Mask Utilities
 ==============
 
-This is a simple little Python library for working with 2D image masks. Functionality is provided for ...
+This is a simple little Python library for working with 2D image masks. Functionality is provided for manipulating pixel data and extracting subsets based on mask values.
 
 
 Installation
