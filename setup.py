@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
 	name = 'maskutils',
-	version = '0.0.1',
+	version = '0.0.2',
 	description = 'Functionality for working with 2D image masks',
 	url = 'https://github.com/adamrehn/maskutils',
 	author = 'Adam Rehn',
