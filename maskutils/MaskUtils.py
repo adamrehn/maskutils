@@ -28,7 +28,7 @@ def isolatePixels(image, mask, maskValue):
 	return isolated
 
 
-def extractConnectedComponents(image, mask, ignoreZero = False):
+def extractConnectedComponents(image, mask, ignoreZero = False, preciseBounds = False):
 	"""
 	Uses the OpenCV "connected components" algorithm to extract individual
 	image segments that are represented by contiguous areas of identical
@@ -37,6 +37,12 @@ def extractConnectedComponents(image, mask, ignoreZero = False):
 	The return value is a dictionary whose keys are the unique values in the
 	mask, and whose values are the list of bounds representing each of the
 	contiguous areas for each key.
+	
+	If `preciseBounds` is False then each list item is a simple rectangle,
+	represented by tuple of (x,y,w,h).
+	
+	If `preciseBounds` is True then each list item is a rotated rectangle,
+	represented by a tuple of (centre, size, rotation).
 	"""
 	
 	# Create the dictionary to hold the mappings from mask value to list of bounds
@@ -65,14 +71,22 @@ def extractConnectedComponents(image, mask, ignoreZero = False):
 			# Ignore instance zero, which contains the entire image
 			if instance != 0:
 				
-				# Extract the bounds of the instance
-				x = stats[instance, cv2.CC_STAT_LEFT]
-				y = stats[instance, cv2.CC_STAT_TOP]
-				w = stats[instance, cv2.CC_STAT_WIDTH]
-				h = stats[instance, cv2.CC_STAT_HEIGHT]
-				
-				# Add a tuple containing the bounds to the list for the current mask value
-				instancesForValues[maskValue].append( (x,y,w,h) )
+				# Determine if we are retrieving simple bounds or precise bounds for each instance
+				if preciseBounds == True:
+					
+					# Compute the precise bounds of the instance
+					contiguous = np.ascontiguousarray(isolatePixels(mask, markers, instance), dtype=np.uint8)
+					_, contours, hierarchy = cv2.findContours(contiguous, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+					instancesForValues[maskValue].append(cv2.minAreaRect(contours[0]))
+					
+				else:
+					
+					# Extract the simple bounds of the instance
+					x = stats[instance, cv2.CC_STAT_LEFT]
+					y = stats[instance, cv2.CC_STAT_TOP]
+					w = stats[instance, cv2.CC_STAT_WIDTH]
+					h = stats[instance, cv2.CC_STAT_HEIGHT]
+					instancesForValues[maskValue].append( (x,y,w,h) )
 	
 	return instancesForValues
 
